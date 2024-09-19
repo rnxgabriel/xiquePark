@@ -8,7 +8,6 @@ import { Modal } from '@/components/modal';
 import CircularProgress from '@/components/circle';
 import ModalButtons from '@/components/modal/modalButtons';
 
-import { useStore } from '@/context/StoreContext';
 import { colors } from '@/constants/colors';
 import Icon from '@/utils/Icon';
 import TextTitle from '@/utils/textTitle';
@@ -16,10 +15,12 @@ import SubTitleText from '@/utils/textSubtitle';
 import HomeButtons from './HomeButtons';
 import { useHourManager } from '@/hooks/useHourManager';
 import HomeActiveCar from './HomeActiveCar';
+import { useAppContext } from '@/context/AppContext';
 
 export default function HomeScreen() {
-  const { Money } = useStore();
+  const { user } = useAppContext();
   const { hour, setHour, hourText, hourModal, setHourModal, activeTimer, handleAddHour, handleDurationChange } = useHourManager();
+
 
   return (
     <>
@@ -28,10 +29,11 @@ export default function HomeScreen() {
         <Modal.Title>Digite a quantidade de Horas:</Modal.Title>
         <Picker
           selectedValue={hour}
-          onValueChange={setHour}
+          onValueChange={(itemValue) => setHour(itemValue)}
           mode='dropdown'
         >
           <Picker.Item label="Selecione" value={0} />
+          <Picker.Item label="Valor Exemplo" value={0.09} />
           <Picker.Item label="2 Horas" value={2} />
           <Picker.Item label="4 Horas" value={4} />
           <Picker.Item label="6 Horas" value={6} />
@@ -66,11 +68,11 @@ export default function HomeScreen() {
           {/* Saldo */}
           <CardBox.Container color={colors.mainGreen} onPress={() => { router.push('/store') }}>
             <Icon name="wallet" color={colors.gold} />
-            {Money < 0 ? <TextTitle color={'#FF4C4C'}>
-              Saldo: R$ {Money.toFixed(2) || '0,00'}
+            {user && user.saldo < 0 ? <TextTitle color={'#FF4C4C'}>
+              Saldo: R$ {user.saldo.toFixed(2) || '0,00'}
             </TextTitle> :
               <TextTitle color={colors.gold}>
-                Saldo: R$ {Money.toFixed(2) || '0,00'}
+                Saldo: R$ {user && user.saldo.toFixed(2) || '0,00'}
               </TextTitle>}
             <SubTitleText color={colors.gold}>
               clique para adicionar

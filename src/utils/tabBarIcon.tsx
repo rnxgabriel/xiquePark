@@ -26,3 +26,10 @@ export function HistoryTabBarIcon({ color }: { color: string }) {
       size={24} color={color} />
   )
 }
+
+export function ProfileTabBarIcon({ color }: { color: string }) {
+  return (
+    <MaterialCommunityIcons name="account"
+      size={24} color={color} />
+  )
+}

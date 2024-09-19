@@ -1,3 +1,4 @@
+import useNotification from '@/hooks/useNotification';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
@@ -58,6 +59,7 @@ export default function CircularProgress({
     if (onDurationChange) {
       const remainingTime = Math.ceil((progress / 100) * duration); // Calcula o tempo restante
       onDurationChange(remainingTime);
+      if (remainingTime === 315) { useNotification() }
     }
   }, [progress]);
 

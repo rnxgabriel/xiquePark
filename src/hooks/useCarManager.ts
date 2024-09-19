@@ -1,14 +1,24 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { useCars } from '@/context/CarsContext';
 import { validateSign } from '@/utils/validateSign';
 import { Login } from '@/services/api/Login';
 import Consulta from '@/services/api/Consulta';
-import { useActiveCar } from '@/context/ActiveCarContext';
 import { router } from 'expo-router';
+import { useAppContext } from '@/context/AppContext';
 
 export const useCarManager = () => {
-  const { addActiveCar, activeCar } = useActiveCar();
+
+  const {
+    user,
+    addCarToUser,
+    updateActiveCar,
+    removeCarFromUser,
+    addCar,
+    removeCar,
+    updateHistory,
+    addValueToHistory
+  } = useAppContext();
+
   const [addCarModal, setAddCarModal] = useState<boolean>(false);
   const [activeCarModal, setActiveCarModal] = useState<boolean>(false);
   const [typeCarModal, setTypeCarModal] = useState<boolean>(false);
@@ -16,24 +26,30 @@ export const useCarManager = () => {
   const [indexCar, setIndexCar] = useState<number>(0);
   const [carSign, setCarSign] = useState<string>('');
 
-  const { addCar, cars, removeCar } = useCars();
-
   const handleConfirmAddCar = async (sign: string) => {
-
-    if (cars.findIndex((car) => car.placa === sign) !== -1) {
-      Alert.alert('Erro', 'Esta Placa ja está cadastrada');
+    const cars = user?.carros || [];
+    // Verifica se o carro já está cadastrado
+    if (cars.some((car) => car.placa === sign)) {
+      Alert.alert('Erro', 'Esta placa já está cadastrada.');
       return;
     }
 
     if (validateSign(sign)) {
-      const token = Login();
-      const vehicleInfo = await Consulta(sign, token);
-      if (vehicleInfo) {
-        setAddCarModal(false);
-        addCar(vehicleInfo);
-      }
-      else {
-        Alert.alert('Erro', 'Erro de conexão, não foi possível consultar o veículo');
+      try {
+        const token = Login();
+        const vehicleInfo = await Consulta(sign, token);
+        if (vehicleInfo) {
+          setAddCarModal(false);
+          addCar(vehicleInfo);
+          if (user) {
+            addCarToUser(user, vehicleInfo);
+            addValueToHistory(`Adicionado o veículo ${vehicleInfo.placa.toString()}`);
+          }
+        } else {
+          Alert.alert('Erro', 'Erro de conexão, não foi possível consultar o veículo.');
+        }
+      } catch (error) {
+        Alert.alert('Erro', 'Ocorreu um erro ao adicionar o carro.');
       }
     } else {
       setAddCarModal(false);
@@ -59,39 +75,72 @@ export const useCarManager = () => {
         {
           text: 'Cancelar',
           style: 'cancel',
-          onPress: () => {
-            setRemoveModal(false);
-          }
+          onPress: () => setRemoveModal(false),
         },
         {
           text: 'Remover',
           onPress: () => {
-            addActiveCar(null); removeCar(indexCar); setRemoveModal(false);
+            if (user && user.carros) {
+              const carToRemove = user.carros[indexCar];
+
+              if (user.carro_ativo == carToRemove) {
+                updateActiveCar(user, null); // Atualiza o carro ativo para nulo
+              }
+
+              // Remove o carro do usuário
+              removeCarFromUser(user, carToRemove);
+
+              // Verifica se o carro removido é o carro ativo
+
+              // Remove o carro da lista local
+              removeCar(indexCar);
+              addValueToHistory('Veículo removido: ' + carToRemove.placa.toString());
+
+              // Fecha o modal
+              setRemoveModal(false);
+            } else {
+              Alert.alert('Erro', 'Nenhum usuário ativo encontrado.');
+            }
           },
         },
       ]
-    )
+    );
   };
 
   const handleSelectActiveCar = () => {
-    const carType = cars[indexCar].tipoVeiculo;
-    if (carType == 'Automovel' || carType == 'Nao Identificado') {
-      setActiveCarModal(false);
-      setTypeCarModal(true);
-    } else if (carType == 'Camioneta') {
-      cars[indexCar].tipoVeiculo = 'Suv';
-    } else {
-      const car = cars[indexCar];
-      addActiveCar(car);
-      setActiveCarModal(false);
-      router.navigate('/(tabs)/');
-    }
+    if (user && user.carros) {
+      const selectedCar = user.carros[indexCar];
+      const carType = selectedCar.tipoVeiculo;
 
+      if (carType === 'Automovel' || carType === 'Nao Identificado') {
+        setActiveCarModal(false);
+        setTypeCarModal(true);
+      } else if (carType === 'Camioneta') {
+        selectedCar.tipoVeiculo = 'Suv';
+        if (user) {
+          updateActiveCar(user, selectedCar);
+          addValueToHistory('Veículo Ativo: ' + selectedCar.placa.toString());
+        }
+        setActiveCarModal(false);
+        router.navigate('/(tabs)/home');
+      } else {
+        if (user) {
+          updateActiveCar(user, selectedCar);
+          addValueToHistory('Veículo Ativo: ' + selectedCar.placa.toString());
+        }
+        setActiveCarModal(false);
+        router.navigate('/(tabs)/home');
+      }
+    }
   };
+
   const handleTypeCarConfirm = (value: string) => {
-    cars[indexCar].tipoVeiculo = value;
-    setTypeCarModal(false);
-  }
+    if (user && user.carros) {
+      const selectedCar = user.carros[indexCar];
+      selectedCar.tipoVeiculo = value;
+      setTypeCarModal(false);
+    }
+  };
 
   return {
     addCarModal,
@@ -100,7 +149,6 @@ export const useCarManager = () => {
     removeCarModal,
     carSign,
     indexCar,
-    cars,
     setCarSign,
     setAddCarModal,
     setActiveCarModal,
@@ -112,6 +160,5 @@ export const useCarManager = () => {
     handleConfirmRemoveCar,
     handleSelectActiveCar,
     handleTypeCarConfirm,
-    activeCar,
   };
 };

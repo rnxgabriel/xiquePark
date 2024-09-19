@@ -13,6 +13,7 @@ import { colors } from '@/constants/colors';
 import { useCarManager } from '@/hooks/useCarManager';
 import Dropdown from '@/components/dropdown';
 import { carTypes } from '@/constants/carTypes';
+import { useAppContext } from '@/context/AppContext';
 
 
 
@@ -26,7 +27,6 @@ export default function CarsScreen() {
     typeCarModal,
     carSign,
     indexCar,
-    cars,
     setCarSign,
     setAddCarModal,
     setActiveCarModal,
@@ -37,16 +37,17 @@ export default function CarsScreen() {
     handleConfirmRemoveCar,
     handleSelectActiveCar,
     handleTypeCarConfirm,
-    activeCar
   } = useCarManager();
+
+  const { user } = useAppContext()
 
   return (
     <>
       {/* Carro Activo */}
-      {activeCarModal && (
+      {activeCarModal && user && user.carros && (
         <Modal.Root visible={activeCarModal} onClose={() => setActiveCarModal(false)}>
           <Modal.Title>Informações do carro: </Modal.Title>
-          <CarDetails car={cars[indexCar]} index={indexCar} />
+          <CarDetails car={user.carros[indexCar]} index={indexCar} />
           <Modal.Buttons
             onClose={() => setActiveCarModal(false)}
             confirmTitle='Selecionar'
@@ -88,7 +89,7 @@ export default function CarsScreen() {
 
       <ScrollBox>
         {/* Lista de Carros */}
-        {cars.map((car, index) => (
+        {user && user?.carros && user?.carros.map((car, index) => (
           <Card.Root
             key={index}
             height={'10%'}
@@ -100,7 +101,7 @@ export default function CarsScreen() {
               <SubTitleText size={16}>{car.modelo}</SubTitleText>
               <SubTitleText size={14}>{car.placa}</SubTitleText>
             </Card.Content>
-            {activeCar?.placa === car.placa && <Icon name="check-bold" color={colors.secondGreen} />}
+            {user.carro_ativo?.placa === car.placa && <Icon name="check-bold" color={colors.secondGreen} />}
           </Card.Root>
         ))}
 

@@ -4,13 +4,14 @@ import {
   HistoryTabBarIcon,
   CarTabBarIcon,
   HomeTabBarIcon,
+  ProfileTabBarIcon,
 } from '../../utils/tabBarIcon';
 import { screenOptions } from '../../constants/screenOptions';
 
 export default function Layout() {
   return (
     <>
-      <Tabs screenOptions={{ ...screenOptions,  }}>
+      <Tabs screenOptions={{ ...screenOptions, }}>
         <Tabs.Screen name="home" options={{
           title: 'Início',
           tabBarIcon: ({ color, focused }) => HomeTabBarIcon({ color, focused })
@@ -25,6 +26,11 @@ export default function Layout() {
           title: 'Histórico',
           tabBarIcon: ({ color }) => HistoryTabBarIcon({ color })
         }} />
+        <Tabs.Screen name="profile" options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color }) => ProfileTabBarIcon({ color })
+        }}
+        />
       </Tabs>
       <StatusBar style='dark' />
     </>

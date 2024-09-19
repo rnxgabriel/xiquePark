@@ -4,23 +4,27 @@ import { colors } from '@/constants/colors'
 import SubTitleText from '@/utils/textSubtitle'
 import TextTitle from '@/utils/textTitle'
 import React from 'react'
-import { useActiveCar } from '@/context/ActiveCarContext'
+import { useAppContext } from '@/context/AppContext'
 
 export default function HomeActiveCar() {
-  const { activeCar } = useActiveCar()
+  const { user } = useAppContext()
+
   return (
     <>
-      <Card.Root color={colors.second}>
+      <Card.Root color={colors.second}
+        onPress={() => console.log(user)}
+        onLongPress={() => console.log(user?.carros)}
+      >
         <Card.Content>
           <TextTitle>
-            {activeCar?.modelo ? activeCar?.modelo : "Nenhum carro selecionado"}
+            {user?.carro_ativo?.modelo ? user?.carro_ativo?.modelo : "Nenhum carro selecionado"}
           </TextTitle>
           <SubTitleText style={{ marginTop: 12 }}>
-            {activeCar?.placa ? "Placa: " + activeCar?.placa : 'Selecione um veículo'}
+            {user?.carro_ativo?.placa ? "Placa: " + user?.carro_ativo?.placa : 'Selecione um veículo'}
           </SubTitleText>
         </Card.Content>
-        <Image key={activeCar?.logo} style={{ marginRight: 16 }}
-          source={{ uri: activeCar?.logo }}
+        <Image key={user?.carro_ativo?.logo} style={{ marginRight: 16 }}
+          source={{ uri: user?.carro_ativo?.logo }}
           width={72} height={72}
         />
       </Card.Root>

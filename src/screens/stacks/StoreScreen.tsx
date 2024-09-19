@@ -10,16 +10,17 @@ import { ListItem } from '@/components/listItem';
 import ListContainer from '@/components/listItem/ListContainer';
 import { CardBox } from '@/components/cards/cardBox';
 import { Modal } from '@/components/modal';
+import { useAppContext } from '@/context/AppContext';
 
 export default function StoreScreen() {
-  const { handleConfirm, modalVisible, setModalVisible, setInputValue, Money } = useStoreManager()
-
+  const { handleConfirm, modalVisible, setModalVisible, setInputValue } = useStoreManager()
+  const { user } = useAppContext()
   return (
     <>
       <ScrollBox>
         <CardBox.Root>
           <CardBox.Container color="transparent" disabled>
-            <TextTitle size={32}>R$ {Money.toFixed(2) || '0,00'}</TextTitle>
+            <TextTitle size={32}>R$ {user?.saldo.toFixed(2) || '0,00'}</TextTitle>
           </CardBox.Container>
         </CardBox.Root>
 
@@ -53,16 +54,6 @@ export default function StoreScreen() {
             </ListContainer>
           </ListItem.Root>
         )}
-        {/* 
-        <ListItem.Root onPress={() => setModalVisible(true)}>
-          <ListItem.Container>
-            <Icon name="clock-outline" />
-            <TextTitle>Horas</TextTitle>
-          </ListItem.Container>
-          <ListContainer>
-            <Icon name="chevron-right" />
-          </ListContainer>
-        </ListItem.Root> */}
 
         <ListItem.Root onPress={() => setModalVisible(true)}>
           <ListItem.Container>

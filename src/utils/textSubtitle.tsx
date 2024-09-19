@@ -2,7 +2,7 @@ import { Text, TextStyle } from 'react-native'
 import React from 'react'
 
 interface SubTitleTextProps {
-  children: string
+  children: string | string[] | React.ReactNode
   color?: string
   size?: number
   style?: TextStyle

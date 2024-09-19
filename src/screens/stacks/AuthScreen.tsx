@@ -1,16 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Switch, Animated, ViewStyle } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Switch, Animated, ViewStyle, Image } from 'react-native';
 import ScrollBox from '@/components/scrollBox/scrollBox';
 import { colors } from '@/constants/colors';
 import SubTitleText from '@/utils/textSubtitle';
 import TextTitle from '@/utils/textTitle';
+import { UserT } from '@/types/User.Type';
+import { router } from 'expo-router';
+import { useAppContext } from '@/context/AppContext';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nome, setNome] = useState('');
+  const [name, setname] = useState('');
   const [toggle, setToggle] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current; // Valor inicial da animação
+  const { addUser, setUser, users } = useAppContext();
 
   // Função para validar o login
   const handleCheckData = () => {
@@ -33,12 +37,35 @@ export default function AuthScreen() {
 
   const handleRegister = () => {
     handleCheckData();
-
-
+    const user = users.find((user) => user.email === email && user.senha === password)
+    if (user) {
+      Alert.alert('Erro', 'Email ja existe');
+      return;
+    }
+    const newUser: UserT = {
+      name: name,
+      email: email,
+      senha: password,
+      carro_ativo: null,
+      carros: [],
+      saldo: 0,
+      historico: null,
+      profileImage: ''
+    };
+    addUser(newUser);
+    setUser(newUser);
+    router.replace('/(tabs)/home');
   };
 
   const handleLogin = () => {
     handleCheckData();
+    const user = users.find((user) => user.email === email && user.senha === password)
+    if (user) {
+      setUser(user);
+      router.push('/(tabs)/home');
+    } else {
+      Alert.alert('Erro', 'Email ou senha inválidos');
+    }
   };
 
   const handleToggle = () => {
@@ -54,12 +81,12 @@ export default function AuthScreen() {
 
   const animatedHeight = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 50], // A altura do TextInput vai de 0 a 50
+    outputRange: [50, 0], // A altura do TextInput vai de 0 a 50
   });
 
   const animatedOpacity = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 1], // A opacidade vai de 0 a 1
+    outputRange: [1, 0], // A opacidade vai de 0 a 1
   });
 
   const animatedViewStyle: ViewStyle = {
@@ -68,21 +95,21 @@ export default function AuthScreen() {
 
   return (
     <ScrollBox style={styles.container}>
-      <View>
-        <TextTitle size={24} style={{ marginBottom: 20 }}>
-          Authentique-se
+      <View style={{ borderColor: colors.mainGreen, borderBottomWidth: 1, marginBottom: 16, }}>
+        <TextTitle size={24} style={{ borderColor: colors.mainGreen }} color={colors.mainGreen}>
+          XiquePark
         </TextTitle>
       </View>
 
-      {/* Campo de Nome com Animação */}
+      {/* Campo de name com Animação */}
       <Animated.View style={animatedViewStyle}>
         <TextInput
           style={styles.input}
           placeholder="Nome"
-          value={nome}
-          onChangeText={setNome}
+          value={name}
+          onChangeText={setname}
           keyboardType="default"
-          autoCapitalize="none"
+          autoCapitalize="words"
           autoCorrect={false}
           placeholderTextColor={'#999'}
         />
@@ -109,7 +136,7 @@ export default function AuthScreen() {
         placeholderTextColor={'#999'}
       />
 
-      {!toggle ?
+      {toggle ?
         (<TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
@@ -122,13 +149,21 @@ export default function AuthScreen() {
 
       <View style={styles.switch}>
         <SubTitleText color={colors.mainGreen}>
-          Selecione o tipo de autenticação
+          Já possui uma conta ?
         </SubTitleText>
-        <Switch value={toggle} onChange={handleToggle} />
+        <Switch value={toggle} onChange={handleToggle} trackColor={{ true: colors.mainGreen }} />
       </View>
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <TextTitle color={colors.mainGreen}>Um oferecimento:</TextTitle>
+        <Image
+          source={require('../../../assets/images/OlympcGreen.png')}
+          style={{ width: 92, height: 92 }} />
+      </View>
+
     </ScrollBox >
   );
 }
+// OQH3065
 
 const styles = StyleSheet.create({
   container: {
@@ -149,7 +184,7 @@ const styles = StyleSheet.create({
   button: {
     height: 50,
     width: '100%',
-    backgroundColor: colors.terciary,
+    backgroundColor: colors.mainGreen,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -160,10 +195,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   switch: {
-    marginTop: 16,
+    marginTop: 20,
     padding: 10,
     gap: 6,
     height: 50,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
